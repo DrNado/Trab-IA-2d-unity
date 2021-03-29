@@ -22,18 +22,20 @@ public class GeneticAlgorithm : MonoBehaviour
 
     void Start()
     {
-        BuildInitialSolutionList();
-
-       for(int i = 0; i < iterationAmount; i++)
-        {
-            RunGeneticAlgorithm();
-        }
-
-        FindBestSolution();
+        Recalculate();
     }
 
-    public void Reculculate()
+    public void Recalculate()
     {
+        StartCoroutine(RecalculateRoutine());
+    }
+
+    public IEnumerator RecalculateRoutine()
+    {
+        scoreText.text = "Calculating: " + ((1 / (float)finalIterationAmount) * (float)finalSolutionList.Count * 100).ToString("F0") + "% Done";
+       
+        yield return null;
+
         solutionList.Clear();
 
         BuildInitialSolutionList();
@@ -50,7 +52,7 @@ public class GeneticAlgorithm : MonoBehaviour
     {
         bestSolution = 0;
         finalSolutionList.Clear();
-        Reculculate();
+        Recalculate();
     }
     public void BuildInitialSolutionList()
     {
@@ -216,17 +218,10 @@ public class GeneticAlgorithm : MonoBehaviour
 
     public void FilterSolutionList()
     {
-
-        while(solutionList.Count > solutionListMaxSize)
+        solutionList.Sort((x1, x2) => x1.solutionWeight.CompareTo(x2.solutionWeight));
+        while (solutionList.Count > solutionListMaxSize)
         {
-            int worstSolution = 0;
-
-            for(int i = 1; i < solutionList.Count; i++)
-            {
-                if (solutionList[i].solutionWeight > solutionList[worstSolution].solutionWeight)
-                    worstSolution = i;
-            }
-            solutionList.RemoveAt(worstSolution);
+            solutionList.RemoveAt(solutionList.Count - 1);
         }
     }
 
@@ -242,7 +237,8 @@ public class GeneticAlgorithm : MonoBehaviour
 
         if (finalSolutionList.Count < finalIterationAmount)
         {
-            Reculculate();
+            DrawLines();
+            Recalculate();
         }
         
         else
